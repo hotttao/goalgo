@@ -15,7 +15,3 @@ type ProbeHashMap struct {
 // LRU 链表与散列表实现的 LRU 缓存淘汰算法
 type LRU struct {
 }
-
-// ConsistentHash 一致性哈希算法
-type ConsistentHash struct {
-}
