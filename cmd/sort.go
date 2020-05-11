@@ -18,6 +18,11 @@ var sortCmd = &cobra.Command{
 		data := []int{1, 2, 1, 6, 9, 10, 3}
 		data = algo.MergeSort(data)
 		fmt.Println(data)
+
+		data = []int{1, 2, 1, 6, 9, 10, 3}
+		fmt.Println("heap sort")
+		data = algo.HeapSort(data)
+		fmt.Println(data)
 	},
 }
 

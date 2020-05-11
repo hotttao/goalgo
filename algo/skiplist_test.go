@@ -1,7 +1,6 @@
 package algo
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -16,21 +15,21 @@ func (s S) String() string {
 }
 
 func TestSkipList(t *testing.T) {
-	s := NewSkipList(3, 3)
-	a := S("abc")
-	s.Insert(6, a)
+	// s := NewSkipList(3, 3)
+	// a := S("abc")
+	// s.Insert(6, a)
+	// // s.String()
+	// b := S("find")
+	// s.Insert(4, b)
+	// // s.String()
+	// s.Insert(1, a)
 	// s.String()
-	b := S("find")
-	s.Insert(4, b)
+	// v, ok := s.Find(4)
+	// fmt.Printf("%v - %t\n", v.Key(), ok)
 	// s.String()
-	s.Insert(1, a)
-	s.String()
-	v, ok := s.Find(4)
-	fmt.Printf("%v - %t\n", v.Key(), ok)
-	s.String()
-	s.Delete(4)
-	s.String()
-	s.Insert(10, a)
+	// s.Delete(4)
+	// s.String()
+	// s.Insert(10, a)
 	// s.Insert(8, a)
 	// s.Insert(9, a)
 	// s.String()
