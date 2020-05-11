@@ -39,8 +39,31 @@ func Partition(data []int, left, right int) int {
 }
 
 // MergeSort 归并排序
-func MergeSort(data []int) {
+func MergeSort(data []int) []int {
+	if len(data) <= 1 {
+		return data
+	}
+	mid := len(data) / 2
+	left := MergeSort(data[:mid])
+	right := MergeSort(data[mid:])
+	merge := Merge(left, right)
+	return merge
+}
 
+// Merge 归并排序的合并函数
+func Merge(A, B []int) []int {
+	C := make([]int, len(A)+len(B), len(A)+len(B))
+	i, j := 0, 0
+	for i+j < len(C) {
+		if i > len(A)-1 || (j <= len(B)-1) && (A[i] > B[j]) {
+			C[i+j] = B[j]
+			j++
+		} else {
+			C[i+j] = A[i]
+			i++
+		}
+	}
+	return C
 }
 
 // DoubbleSort 冒泡排序

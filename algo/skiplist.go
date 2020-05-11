@@ -91,7 +91,7 @@ func (s *SkipList) CreateNode(key float64, value SkipElement) *SkipNode {
 
 // Find 节点查找
 func (s *SkipList) find(key float64) (pre []*SkipNode, ok bool) {
-	return path, false
+	return nil, false
 }
 
 // Find 查找
@@ -121,5 +121,5 @@ func (s *SkipList) Insert(key float64, value SkipElement) {
 
 // Delete 删除节点
 func (s *SkipList) Delete(key float64) (SkipElement, bool) {
-
+	return nil, false
 }
