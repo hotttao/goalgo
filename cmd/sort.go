@@ -23,6 +23,27 @@ var sortCmd = &cobra.Command{
 		fmt.Println("heap sort")
 		data = algo.HeapSort(data)
 		fmt.Println(data)
+
+		data = []int{1, 2, 1, 6, 9, 10, 3}
+		fmt.Println("dubble sort")
+		data = algo.DoubbleSort(data)
+		fmt.Println(data)
+
+		data = []int{1, 2, 1, 6, 9, 10, 3}
+		fmt.Println("insert sort")
+		algo.InsertSort(data)
+		fmt.Println(data)
+
+		data = []int{1, 2, 1, 6, 9, 10, 3}
+		fmt.Println("select sort")
+		algo.InsertSort(data)
+		fmt.Println(data)
+
+		data = []int{1, 2, 1, 6, 9, 10, 3}
+		fmt.Println("count sort")
+		data = algo.CountSort(data)
+		fmt.Println(data)
+
 	},
 }
 
