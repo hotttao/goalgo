@@ -109,6 +109,17 @@ func LinkDeleteLastN(head *LinkNode, n int) *LinkNode {
 }
 
 // LinkMiddle 取链表的中间节点
-func LinkMiddle() {
-
+func LinkMiddle(head *LinkNode) *LinkNode {
+	single := head
+	double := head
+	for double.Nxt != nil && double.Nxt.Nxt != nil {
+		single = single.Nxt
+		double = double.Nxt.Nxt
+	}
+	// 奇数节点，double 会指向链表的尾部 double.Nxt 为 nil
+	// 偶数节点，double 会指向链表的导数第二个节点 double.Nxt 不为 nil
+	if double.Nxt == nil {
+		return single
+	}
+	return single.Nxt
 }
