@@ -1,3 +1,15 @@
+/*
+二分查找实现注意事项:
+1. 循环截止条件是 start<=end
+2. mid = start + (end-start)/2 放置 start+end 溢出
+3. start=mid+1 end=mid-1 特殊情况下如果不 +-1 会导致死循环
+4. start，end 如何更新思考:
+	- DATA[mid] > Value 说明列表值大，需要缩小范围，e=mid-1
+	- DATA[mid] < Value 说明列表值小，需要扩大范围，s=mid+1
+	- 始终使用 DATA[mid] 与 value 去比较，保持前后思考一致
+
+*/
+
 package algo
 
 // BinarySearch 精确二分查找

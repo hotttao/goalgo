@@ -1,3 +1,15 @@
+/*
+Package algo heap
+Heap 实现过程
+1. 首先定义 parent,left,right 获取父节点，左节点，右节点的方法，通过方法名抽象操作，便于理解
+2. 定义 swap 交换数据位置的方法，同样是抽象便于理解
+3. 定义 Resize 自动扩缩容方法
+4. 定义 UpHead 向上堆化，DownHeap 向下堆化方法
+5. 最后实现 Heap 的功能方法，BuildHeap，HeapSort，Add，Pop，Replace
+
+需要注意:
+1. root 根节点是从 1 开始的，Heap capacity 必须 +1，否则数组会溢出
+2. DownHeap 要注意 i 的更新是否会影响 right(i)*/
 package algo
 
 import "fmt"
