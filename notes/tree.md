@@ -19,9 +19,13 @@
 Tree
 |------- BinaryTree
 |            | 
-|            |------------ ArraryBinaryTree
+|            |--------ArraryBinaryTree
 |            | 
-|            |------------ LinkedBinaryTree
+|            |--------LinkedBinaryTree
+|            |                    |-------TreeMap
+|            |                    |          |------------ AVLTree
+|            |                    |          |------------ SplayTree
+|            |                    |          |------------ RedBlackTree
 ```
 ## 2. 树
 ### 2,1 Tree
@@ -203,8 +207,8 @@ class EulerTour(object):
         for c in self._tree.children(p):
             result.append(self._tour(c, d + 1, path))
             path[-1] += 1
-        value = self._hook_postvisit(p, d, path, result)
         path.pop()
+        value = self._hook_postvisit(p, d, path, result)
         return value
 
     def _hook_previsit(self, p, d, path):
@@ -263,3 +267,249 @@ class BinaryLayout(BinaryEulerTour)
         self._count+=1
 ```
 除了 BinaryEulerTour 提供的钩子函数外，我们以 _count 实例变量的形式引入了额外的状态，从而调整了 BinaryEulerTour 框架，扩展了框架提供的功能。
+
+## 4. 二叉搜索树与 AVL 平衡树
+### 4.1
+TreeMap 二叉搜索树是一种特殊的二叉树，其满足以下条件:
+1. 存储在 p 的左子树的键都小于 p 的键
+2. 存储在 p 的右子树的键都大于 p 的键
+
+这个特性使得树的中序遍历可以按升序的方式输出键。这个特性使得二叉搜索树增加了如下方法:
+1. `first()`: 返回一个包含最小键的节点，即最左子节点
+2. `last()`: 返回一个包含最大键的节点，即最右子节点
+3. `before(p)`: 
+    - 返回比节点 p 的键小的所有节点中的键最大的节点
+    - 即中序遍历中在 p 之前最后一个被访问的节点
+    - 如果 p 是第一个节点，则返回 None
+4. `after(p)`: 
+    - 返回比节点 p 的键大的所有节点中最小的节点
+    - 即中序遍历中在 p 之后第一个被访问的节点
+    - 如果 p 是最后一个节点，返回 None
+5. `search(k)`: 在树中搜索键 k，返回搜索路径的最终位置，这样get，set，del 方法可以复用 search 方法
+5. `find_le(k)`: 小于等于 k 的节点，可以基于 search(k) 和 before(p) 实现 
+6. `find_ge(k)`: 大于等于 k 的节点，可以基于 search(k) 和 after(p) 实现 
+7. `find_range(start, end)`: 位于 start, end 之间的节点
+8. `T[k]`: 查找键 k 对应的 value
+9. `T[k]=v`: 设置键 k 的值
+10. `del T[k]`: 删除键 k
+11. `_rebalance_delete(p)`: AVL 和 红黑树实现树平衡的钩子函数
+12. `_rebalance_insert(p)`: AVL 和 红黑树实现树平衡的钩子函数
+13. `_rebalance_access(p)`: AVL 和 红黑树实现树平衡的钩子函数
+
+下面是 TreeMap 的具体实现:
+
+```Python
+class TreeMap(LinkedBinaryTree, MapBase):
+
+    def _subtree_search(self, p, k):
+        """
+        :param p:
+        :param k:
+        :return: 在子树中搜索值为 k 的节点，未搜索到返回最后搜索路经的最终位置
+        """
+        p_value = p.key()
+        if p_value == k:
+            return p
+        elif p_value > k:
+            if self.left(p):
+                return self._subtree_search(self.left(p), k)
+        else:
+            if self.right(p):
+                return self._subtree_search(self.right(p), k)
+        return p
+
+    def _subtree_first_position(self, p):
+        """
+        :return: 返回子树迭代时，第一个位置节点
+        """
+        walk = p
+        while self.left(walk):
+            walk = self.left(walk)
+        return walk
+
+    def _subtree_last_position(self, p):
+        """
+        :param p:
+        :return: 返回子树迭代时，最后一个位置节点
+        """
+        walk = p
+        while self.right(walk):
+            walk = self.right(walk)
+        return walk
+
+    ################# 引导方法 #######################
+    def first(self):
+        """
+        :return: 返回树迭代序列的第一个节点
+        """
+        return self._subtree_first_position(self.root()) if len(self) > 0 else None
+
+    def last(self):
+        """
+        :return: 返回树迭代序列的最后一个节点
+        """
+        return self._subtree_last_position(self.root()) if len(self) > 0 else None
+    
+    def before(self, p):
+        """
+        :param p:
+        :return: 返回迭代序列中位于 p 之前的，最大节点
+        """
+        if self.left(p):
+            return self._subtree_last_position(self.left(p))
+        else:
+            walk = p
+            ancestor = self.parent(walk)
+            while ancestor and self.left(ancestor) is walk:
+                walk = ancestor
+                ancestor = self.parent(ancestor)
+            return ancestor
+    
+    def after(self, p):
+        """
+        :param p:
+        :return: 返回迭代序列中位于 p 之后的，最小节点
+        """
+        if self.right(p):
+            self._subtree_first_position(self.right(p))
+        else:
+            walk = p
+            ancestor = self.parent(walk)
+            while ancestor and self.right(ancestor) is walk:
+                walk = ancestor
+                ancestor = self.parent(ancestor)
+            return ancestor
+    
+    def find_position(self, k):
+        """
+        :param k:
+        :return: 查找值等于 k 的位置节点
+        """
+        if self.is_empty():
+            return None
+        else:
+            p = self._subtree_search(self.root(), k)
+            # avl 平衡树的钩子函数
+            self._rebalance_access(p)
+            return p
+    
+    ####################### 有序映射 ######################
+    def find_ge(self, k):
+        """
+        :param k:
+        :return: 查找大于等于 k 的最小节点
+        """
+        p = self.find_position(k)
+        if p and p.key() < k:
+            p = self.after(p)
+        return p.key(), p.value() if p else None, None
+    
+    def find_range(self, start, stop):
+        """
+        :param start:
+        :param stop:
+        :return: 查找值位于 start <= k < stop 的节点
+        """
+        if not self.is_empty():
+            if start is None:
+                p = self.first()
+            else:
+                p = self.find_position(start)
+                if p and p.key() < start:
+                    p = self.after(p)
+            while p and (stop is None or p.key() < stop):
+                yield p.key(), p.value()
+                p = self.after(p)
+    
+    ########################### 增删改查节点操作 ################
+    def __getitem__(self, item):
+        """
+        :param item:
+        :return: 查找 item 映射的值  
+        """
+        if not self.is_empty():
+            p = self.find_position(item)
+            self._rebalance_access(p)
+            if p.key() == item:
+                return p.value()
+        raise KeyError('Key Error:' + repr(item))
+    
+    def __setitem__(self, key, value):
+        """
+        :param key:
+        :param value:
+        :return: 设置键 key 的值为 value
+        """
+        if self.is_empty():
+            leaf = self._add_root(self._Item(key, value))
+        else:
+            p = self.find_position(key)
+            if p.key() == key:
+                p.element()._value = value
+                self._rebalance_access(p)
+                return
+            else:
+                item = self._Item(key, value)
+                if p.key() < key:
+                    leaf = self._add_right(p, item)
+                else:
+                    leaf = self._add_left(p, item)
+        self._rebalance_insert(leaf)
+    
+    def __iter__(self):
+        """
+        :return: 产生键的一个迭代
+        """
+        p = self.first()
+        while p:
+            yield p.key()
+            p = self.after(p)
+    
+    def delete(self, p):
+        """
+        :param p:
+        :return: 删除位置节点 p
+        """
+        if self.left(p) and self.right(p):
+            r = self._subtree_last_position(self.left(p))
+            self._replace(p, r.element())
+            p = r
+        parent = self.parent(p)
+        self._delete(p)
+        self._rebalance_delete(parent)
+    
+    def __delitem__(self, key):
+        """
+        :param key:
+        :return: 删除键 key
+        """
+        if not self.is_empty():
+            p = self._subtree_search(self.root(), key)
+            if p.key() == key:
+                self.delete(p)
+                return
+            self._rebalance_access(p)
+        raise KeyError('Key Error: ' + repr(key))
+    
+    ################### 平衡二叉树的钩子函数 ###############
+    def _rebalance_delete(self, p):
+        pass
+    
+    def _rebalance_insert(self, p):
+        pass
+    
+    def _rebalance_access(self, p):
+        pass
+```
+
+### 4.2 AVL 树
+二叉搜索树的问题在于在不断的插入和删除之后树就会变得不平衡，从而导致增删改查的时间复杂度不断变高。而 AVL 树就是能保持树平衡的二叉树。AVL 树要求，对于树中每一个节点 p，p 的孩子的高度最多相差 1。伸展树和红黑树都能维持树的平衡，虽然它们与 AVL 树维持平衡的方法有所差别，但是核心操作都是树的旋转。因此要想写好这些树，首先我们要实现如下几个树的旋转操作:
+1. `_relink(parent, child, make_left_child)`: 关联父子节点
+2. `_rotate(p)`: 旋转过程中，重新定义父子关系
+3. `_restructure(x)`: 执行旋转操作
+
+TreeMap 中我们已经预留了维持树平衡的接口，AVL 实现中我们需要做的是
+1. 记录每个节点的高度
+2. 实现钩子函数 `_rebalance_insert` 和 `_rebalance_delete`(两个方法的实现相同)以保证在插入和删除节点后，AVL 树的高度满足树中每一个节点 p，p 的孩子的高度最多相差 1。
+
+红黑树相较于 AVL 树，增删改查操作更加稳定，因此比 AVL 树更常用，但是其实现起来更为复杂。红黑树有现成的实现，手写他们不是我们的目的，我们的目的是明白树的整个抽象层次，并在需要的时候知道使用什么树。
