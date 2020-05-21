@@ -512,4 +512,107 @@ TreeMap 中我们已经预留了维持树平衡的接口，AVL 实现中我们�
 1. 记录每个节点的高度
 2. 实现钩子函数 `_rebalance_insert` 和 `_rebalance_delete`(两个方法的实现相同)以保证在插入和删除节点后，AVL 树的高度满足树中每一个节点 p，p 的孩子的高度最多相差 1。
 
+下面是 AVL 树的具体实现:
+```python
+```
+
+### 4.3 红黑树
 红黑树相较于 AVL 树，增删改查操作更加稳定，因此比 AVL 树更常用，但是其实现起来更为复杂。红黑树有现成的实现，手写他们不是我们的目的，我们的目的是明白树的整个抽象层次，并在需要的时候知道使用什么树。
+
+## 5. 树的序列化与反序列化
+序列化和反序列化是所有数据结构通用的操作，对于树也是如此，树的序列化与反序列化主要使用的是树的前序，层序遍历。
+### 5.1 二叉树
+我们先来看如何使用先序遍历实现二叉树的序列化和反序列化。
+#### 先序遍历
+```python
+from collections import deque
+
+class Codec:
+
+    def serialize(self, root):
+        """Encodes a tree to a single string.
+        
+        :type root: TreeNode
+        :rtype: str
+        """
+        if root is None:
+            return "null"
+        return str(root.val) + "," + self.serialize(root.left) + "," + self.serialize(root.right)
+        
+
+    def deserialize(self, data):
+        """Decodes your encoded data to tree.
+        
+        :type data: str
+        :rtype: TreeNode
+        """
+        collect = deque(data.split(","))
+        def dfs():
+            if len(collect) == 0:
+                return None
+            node = collect.popleft()
+            if node == "null":
+                return None
+            root = TreeNode(int(node))
+            root.left = dfs()
+            root.right = dfs()
+            return root
+        return dfs()
+```
+
+#### 中序遍历
+```python
+from collections import deque
+
+class Codec:
+
+    def serialize(self, root):
+        """Encodes a tree to a single string.
+        
+        :type root: TreeNode
+        :rtype: str
+        """
+        if not root:
+            return ""
+        collect = []
+        queue = deque([root])
+        while len(queue) > 0:
+            node = queue.popleft()
+            if node:
+                queue.append(node.left)
+                queue.append(node.right)
+                collect.append(str(node.val))
+            else:
+                collect.append("null")
+        return ",".join(collect)
+
+
+    def deserialize(self, data):
+        """Decodes your encoded data to tree.
+        
+        :type data: str
+        :rtype: TreeNode
+        """
+        if data == "":
+            return None
+        print(data)
+        collect = deque(data.split(","))
+        root = TreeNode(int(collect.popleft()))
+        queue = deque([root])
+        while len(queue) > 0:
+            parent = queue.popleft()
+            left, right = collect.popleft(), collect.popleft()
+            if left != "null":
+                left_node = TreeNode(int(left))
+                queue.append(left_node)
+                parent.left = left_node
+            if right != "null":
+                right_node = TreeNode(int(right))
+                queue.append(right_node)
+                parent.right = right_node
+        return root
+```
+
+### 5.1 普通树
+```python
+```
