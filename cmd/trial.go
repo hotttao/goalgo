@@ -2,10 +2,19 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 )
+
+// Combine 结构组合接口
+type Combine interface {
+	Name()
+}
+
+// Output 结构嵌套接口
+type Output struct {
+	Combine
+}
 
 // trialCmd represents the trial command
 var trialCmd = &cobra.Command{
@@ -14,17 +23,20 @@ var trialCmd = &cobra.Command{
 	Long:  `trail some package`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("trial called")
-		timer := time.NewTimer(3 * time.Second)
-		go func() {
-			select {
-			case <-timer.C:
-				fmt.Println("timer is running")
-			}
-		}()
-		time.Sleep(1 * time.Second)
-		fmt.Println(timer.Stop())
-		fmt.Println("timer stop")
-		time.Sleep(5 * time.Second)
+		// timer := time.NewTimer(3 * time.Second)
+		// go func() {
+		// 	select {
+		// 	case <-timer.C:
+		// 		fmt.Println("timer is running")
+		// 	}
+		// }()
+		// time.Sleep(1 * time.Second)
+		// fmt.Println(timer.Stop())
+		// fmt.Println("timer stop")
+		// time.Sleep(5 * time.Second)
+		v := Output{}
+		fmt.Println(v)
+		v.Name()
 	},
 }
 
