@@ -28,7 +28,7 @@ Tree
 |            |                    |          |------------ RedBlackTree
 ```
 ## 2. 树
-### 2,1 Tree
+### 2.1 Tree
 Tree 最普通的树，可以有任意的分叉和孩子数，支持如下操作:
 1. `root()`: 返回树的根节点
 2. `parent(p)`: 返回节点 p 的父节点
@@ -508,6 +508,10 @@ class TreeMap(LinkedBinaryTree, MapBase):
 2. `_rotate(p)`: 旋转过程中，重新定义父子关系
 3. `_restructure(x)`: 执行旋转操作
 
+```python
+
+```
+
 TreeMap 中我们已经预留了维持树平衡的接口，AVL 实现中我们需要做的是
 1. 记录每个节点的高度
 2. 实现钩子函数 `_rebalance_insert` 和 `_rebalance_delete`(两个方法的实现相同)以保证在插入和删除节点后，AVL 树的高度满足树中每一个节点 p，p 的孩子的高度最多相差 1。
@@ -521,9 +525,11 @@ TreeMap 中我们已经预留了维持树平衡的接口，AVL 实现中我们�
 
 ## 5. 树的序列化与反序列化
 序列化和反序列化是所有数据结构通用的操作，对于树也是如此，树的序列化与反序列化主要使用的是树的前序，层序遍历。
-### 5.1 二叉树
+
+### 5.1 二叉树序列化
 我们先来看如何使用先序遍历实现二叉树的序列化和反序列化。
-#### 先序遍历
+
+#### 先序遍历实现的序列化
 ```python
 from collections import deque
 
@@ -560,7 +566,7 @@ class Codec:
         return dfs()
 ```
 
-#### 中序遍历
+#### 中序遍历实现的序列化
 ```python
 from collections import deque
 
@@ -613,6 +619,6 @@ class Codec:
         return root
 ```
 
-### 5.1 普通树
+### 5.1 普通树的序列化
 ```python
 ```
