@@ -80,20 +80,112 @@ class Solution(object):
 ```
 
 #### 动态规划
-使用动态规划需要我们稍微专变一下思路: 我们需要计算出第 i 次油能走的最远距离dp[i]，然后找出满足 dp[i] >= target 的最小 i。如果我们画出上面的递归调用图:
+如果我们仔细思考上面的回溯代码，我们会发现递归调用过程中如下几个变化的量:
+1. self.min_station: 加油次数，这是我们要求的结果变量
+2. i: 第 i 个加油站
+3. fuel: 能够达到的最远距离
 
-我们如果仔细思考上面的回溯代码，就可以发现，第 i + 1 次走的最远距离为第 t 次 (0 <= t <= i)能走的最远距离加上第 i 个加油站能添加的油。
+看起来我们可以创建一个二维状态转移表，y 轴方向表示第 i 个加油站，x 轴方向表示加了几次油，二维表中的值表示能达到的最远距离。这里动态规划的解法需要我们稍微专变一下思路，求到达指定距离的最少加油次数，跟求指定加油次数能达到的最远距离是同一问题。
+
+整个决策过程设计多个阶段，我们要决定在每个加油站是否加油，并求出能达到的最远距离。第二次加油能走的最远距离显然由上次能走的最远距离决定。符合多阶段最优解模型。
+
+最后根据回溯算法的代码实现，我们可以画出递归树，看是否存在重复子问题。假设输入参数分别是:
+1. target = 100, 
+2. startFuel = 20, 
+3. stations = [[10,60],[20,30],[30,30],[60,40]]
+
+```bash
+              f(0, 20)
+     f(1, 20)          f(1, 80)
+f(2, 0)   f(2, 50) f(2, 80)  f(2, 110)
+```
+递归树中的每个节点表示一种状态，我们用（i, fuel）来表示。其中，i 表示是否在第 i 个加油站加油，fuel 表示能达到的最远距离。看起来没有重复子问题，但是我们要计算的是加油一次能够达到的最远距离，所以上面的 f(1, 80) 和 f(2, 50) 表示我在第 1 个加油站加油最远可以走 80 ，在第 2 个加油站加油最远可以走 50 公里。显示我们会在第 1 个加油站。当然不容易想到。
+
+接下来我们就可以画出状态转移表，并写出代码。在写代码的过程中，你就会发现二维表在这里并没有用，如果我们计算出了第 i 次油能走的最远距离dp[i]，那么 dp[i+1] 加油能达到的最远距离，就取决于 dp[i] 能达到的加油站以及每个加油站能加的油即: `if dp[t] >= station[i+1][0]; dp[t+1]=dp[t]+station[i+1][1]`。下面就是代码实现:
 
 ```python
 class Solution(object):
     def minRefuelStops(self, target, startFuel, stations):
         dp = [startFuel] + [0] * len(stations)
         for i, (location, capacity) in enumerate(stations):
-            for t in xrange(i, -1, -1):
+            for t in xrange(i, -1, -1): 
                 if dp[t] >= location:
                     dp[t+1] = max(dp[t+1], dp[t] + capacity)
 
         for i, d in enumerate(dp):
             if d >= target: return i
         return -1
+```
+
+注意 `xrange(i, -1, -1)` 不能改成 `xrange(0, x + 1)`。
+
+### 2.2 最长递增子序列长度
+[leecode 300](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
+
+#### 回溯
+下面是最长递增子序列长度回溯的非完整实现。
+```python
+class Solution(object):
+    def lengthOfLIS(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        self.nums = nums
+        self.len = 1
+        self.get_lis(0, 1, self.nums[0])
+
+    def get_lis(self, i, l, m):
+        """
+        :param i: 表示这是第几个数
+        :param l: l 当前的最长子序列长度
+        :param m: m 子序列中最大的书
+        :return:
+        """
+        self.len = max(l, self.len)
+        p = self.nums[i]
+        if p >= m:
+            self.get_lis(i + 1, l + 1, p)
+        else:
+            self.get_lis(i + 1, 1, p)
+            self.get_lis(i + 1, l, m)
+```
+
+#### 动态规划实现
+
+```python
+class Solution(object):
+    def lengthOfLIS(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        if not nums:
+            return 0
+        n = len(nums)
+        status = [None] * (n)
+        status[0] = nums[0]
+        end = 0
+        for i in range(1, n):
+            end = max(end, self.binary_search(nums[i], status, end))
+        return end + 1
+
+    def binary_search(self, v, status, end, start=0):
+        m = start
+        if status[end] < v:
+            end += 1
+            status[end] = v
+            return end
+        while start <= end:
+            mid = start + ((end - start) > 1)
+            if status[mid] == v:
+                return end
+            elif status[mid] < v:
+                start = mid + 1
+            else:
+                if mid == m or status[mid-1] < v:
+                    status[mid] = v
+                    return end
+                else:
+                    end = mid - 1
 ```
