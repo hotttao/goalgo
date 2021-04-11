@@ -100,9 +100,9 @@ type Car struct {
 }
 
 type CarBuild interface {
-	SetNum(int)
+	SetNum(int)Build
 	SetColor(string)
-	build() Car
+	Build() Car
 }
 
 type BuildSmallCar struct {
@@ -119,3 +119,11 @@ func (b *BuildSmallCar) SetNum(num int) {
 func (b *BuildSmallCar) SetColor(color string) {
 	b.Color = color
 }
+
+func (b *BuildSmallCar) Build() Car{
+	return Car{
+		Num: b.Num,
+		Color: b.Color,
+	}
+}
+
