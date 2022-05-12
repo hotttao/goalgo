@@ -18,7 +18,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hotttao/goalgo/mode"
 	"github.com/spf13/cobra"
 )
 
@@ -29,8 +28,7 @@ var modeCmd = &cobra.Command{
 	Long:  `command to run desgin mode`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("mode called")
-		hello := mode.NewAPI(2)
-		fmt.Println(hello.Say("tsong"))
+		fmt.Println("tsong")
 	},
 }
 
