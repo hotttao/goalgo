@@ -1,48 +1,48 @@
 @startuml
 package /usr/local/go/src/net/http/server.go{
 annotation /usr/local/go/src/net/http/server.go {
--const StateActive: 
--const StateIdle: 
+-const StateHijacked: 
+-const StateNew: ConnState
+-const bufferBeforeChunkingSize: INT
 -const skipHooks: 
+-const StateActive: 
 -const runHooks: 
 -const StateClosed: 
+-const DefaultMaxHeaderBytes: 
 -const TrailerPrefix: STRING
 -const maxPostHandlerReadBytes: 
--const StateHijacked: 
--const bufferBeforeChunkingSize: INT
--const DefaultMaxHeaderBytes: 
 -const rstAvoidanceDelay: 
--const TimeFormat: STRING
--const StateNew: ConnState
 -const shutdownPollIntervalMax: 
 -const debugServerConnections: 
--var ErrHandlerTimeout: 
+-const TimeFormat: STRING
+-const StateIdle: 
 -var bufioWriter4kPool: Pool
--var ErrHijacked: 
--var crlf: 
 -var errTooLarge: 
--var ErrBodyNotAllowed: 
--var ErrWriteAfterFlush: 
--var testHookServerServe: func( *Server,  Listener) 
--var extraHeaderKeys: 
--var ErrAbortHandler: 
--var uniqNameMu: Mutex
--var bufioWriter2kPool: Pool
--var headerDate: 
--var silenceSemWarnContextKey: 
--var uniqNameNext: 
--var ErrServerClosed: 
--var stateName: 
--var ErrContentLength: 
--var headerContentLength: 
--var defaultServeMux: ServeMux
--var ServerContextKey: 
--var copyBufPool: 
--var DefaultServeMux: 
--var bufioReaderPool: Pool
 -var htmlReplacer: 
+-var ErrContentLength: 
+-var ErrServerClosed: 
+-var uniqNameMu: Mutex
+-var ErrBodyNotAllowed: 
+-var ErrHijacked: 
+-var ErrHandlerTimeout: 
 -var colonSpace: 
+-var ErrAbortHandler: 
+-var defaultServeMux: ServeMux
+-var bufioReaderPool: Pool
+-var bufioWriter2kPool: Pool
+-var testHookServerServe: func( *Server,  Listener) 
+-var stateName: 
+-var DefaultServeMux: 
+-var ErrWriteAfterFlush: 
+-var ServerContextKey: 
+-var headerDate: 
+-var crlf: 
+-var headerContentLength: 
+-var silenceSemWarnContextKey: 
+-var copyBufPool: 
 -var LocalAddrContextKey: 
+-var uniqNameNext: 
+-var extraHeaderKeys: 
 -bufioWriterPool(size int): *Pool
 -newBufioReader(r Reader): *Reader
 -putBufioReader(br *Reader)
@@ -85,11 +85,16 @@ annotation /usr/local/go/src/net/http/server.go {
 -tlsRecordHeaderLooksLikeHTTP(hdr []byte): bool
 +MaxBytesHandler(h Handler, n int64): Handler
 }
-interface Handler{
-+ServeHTTP( ResponseWriter,  *Request)
+interface Hijacker{
++Hijack(): Conn, *ReadWriter, error
 }
 interface closeWriter{
 +CloseWrite(): error
+}
+interface ResponseWriter{
++Header(): Header
++Write( []byte): int, error
++WriteHeader(statusCode int)
 }
 interface CloseNotifier{
 +CloseNotify(): chan bool
@@ -97,32 +102,8 @@ interface CloseNotifier{
 interface Flusher{
 +Flush()
 }
-interface ResponseWriter{
-+Header(): Header
-+Write( []byte): int, error
-+WriteHeader(statusCode int)
-}
-interface Hijacker{
-+Hijack(): Conn, *ReadWriter, error
-}
-class timeoutWriter {
--w: ResponseWriter
--h: Header
--wbuf: Buffer
--req: *Request
--mu: Mutex
--err: error
--wroteHeader: bool
--code: int
-+Push(target string, opts *PushOptions): error
-+Header(): Header
-+Write(p []byte): int, error
--writeHeaderLocked(code int)
-+WriteHeader(code int)
-}
-class globalOptionsHandler {
-
-+ServeHTTP(w ResponseWriter, r *Request)
+interface Handler{
++ServeHTTP( ResponseWriter,  *Request)
 }
 class chunkWriter {
 -res: *response
@@ -133,6 +114,33 @@ class chunkWriter {
 -flush()
 -close()
 -writeHeader(p []byte)
+}
+class loggingConn {
+-name: string
++: Conn
++Write(p []byte): int, error
++Read(p []byte): int, error
++Close(): error
+}
+class checkConnErrorWriter {
+-c: *conn
++Write(p []byte): int, error
+}
+class redirectHandler {
+-url: string
+-code: int
++ServeHTTP(w ResponseWriter, r *Request)
+}
+class readResult {
++_: incomparable
+-n: int
+-err: error
+-b: byte
+
+}
+class writerOnly {
++: Writer
+
 }
 class expectContinueReader {
 -resp: *response
@@ -150,23 +158,17 @@ class timeoutHandler {
 -errorBody(): string
 +ServeHTTP(w ResponseWriter, r *Request)
 }
-class writerOnly {
-+: Writer
-
+class onceCloseListener {
++: Listener
+-once: Once
+-closeErr: error
++Close(): error
+-close()
 }
-class ServeMux {
--mu: RWMutex
--m: map[string]muxEntry
--es: []muxEntry
--hosts: bool
--match(path string): Handler, string
--redirectToPathSlash(host string, path string, u *URL): *URL, bool
--shouldRedirectRLocked(host string, path string): bool
-+Handler(r *Request): Handler, string
--handler(host string, path string): Handler, string
-+ServeHTTP(w ResponseWriter, r *Request)
-+Handle(pattern string, handler Handler)
-+HandleFunc(pattern string, handler func( ResponseWriter,  *Request) )
+class muxEntry {
+-h: Handler
+-pattern: string
+
 }
 class Server {
 +Addr: string
@@ -222,6 +224,67 @@ class Server {
 -onceSetNextProtoDefaults_Serve()
 -onceSetNextProtoDefaults()
 }
+class ServeMux {
+-mu: RWMutex
+-m: map[string]muxEntry
+-es: []muxEntry
+-hosts: bool
+-match(path string): Handler, string
+-redirectToPathSlash(host string, path string, u *URL): *URL, bool
+-shouldRedirectRLocked(host string, path string): bool
++Handler(r *Request): Handler, string
+-handler(host string, path string): Handler, string
++ServeHTTP(w ResponseWriter, r *Request)
++Handle(pattern string, handler Handler)
++HandleFunc(pattern string, handler func( ResponseWriter,  *Request) )
+}
+class timeoutWriter {
+-w: ResponseWriter
+-h: Header
+-wbuf: Buffer
+-req: *Request
+-mu: Mutex
+-err: error
+-wroteHeader: bool
+-code: int
++Push(target string, opts *PushOptions): error
++Header(): Header
++Write(p []byte): int, error
+-writeHeaderLocked(code int)
++WriteHeader(code int)
+}
+class connReader {
+-conn: *conn
+-mu: Mutex
+-hasByte: bool
+-byteBuf: []byte
+-cond: *Cond
+-inRead: bool
+-aborted: bool
+-remain: int64
+-lock()
+-unlock()
+-startBackgroundRead()
+-backgroundRead()
+-abortPendingRead()
+-setReadLimit(remain int64)
+-setInfiniteReadLimit()
+-hitReadLimit(): bool
+-handleReadError(_ error)
+-closeNotify()
++Read(p []byte): int, error
+}
+class globalOptionsHandler {
+
++ServeHTTP(w ResponseWriter, r *Request)
+}
+class initALPNRequest {
+-ctx: Context
+-c: *Conn
+-h: serverHandler
++BaseContext(): Context
++ServeHTTP(rw ResponseWriter, req *Request)
+}
 class extraHeader {
 -contentType: string
 -connection: string
@@ -230,22 +293,10 @@ class extraHeader {
 -contentLength: []byte
 +Write(w *Writer)
 }
-class muxEntry {
--h: Handler
--pattern: string
-
-}
-class redirectHandler {
--url: string
+class statusError {
 -code: int
-+ServeHTTP(w ResponseWriter, r *Request)
-}
-class loggingConn {
--name: string
-+: Conn
-+Write(p []byte): int, error
-+Read(p []byte): int, error
-+Close(): error
+-text: string
++Error(): string
 }
 class response {
 -conn: *conn
@@ -293,41 +344,6 @@ class response {
 +Hijack(): Conn, *ReadWriter, error
 +CloseNotify(): chan bool
 }
-class onceCloseListener {
-+: Listener
--once: Once
--closeErr: error
-+Close(): error
--close()
-}
-class connReader {
--conn: *conn
--mu: Mutex
--hasByte: bool
--byteBuf: []byte
--cond: *Cond
--inRead: bool
--aborted: bool
--remain: int64
--lock()
--unlock()
--startBackgroundRead()
--backgroundRead()
--abortPendingRead()
--setReadLimit(remain int64)
--setInfiniteReadLimit()
--hitReadLimit(): bool
--handleReadError(_ error)
--closeNotify()
-+Read(p []byte): int, error
-}
-class readResult {
-+_: incomparable
--n: int
--err: error
--b: byte
-
-}
 class conn {
 -server: *Server
 -cancelCtx: CancelFunc
@@ -353,46 +369,30 @@ class conn {
 -getState(): ConnState, int64
 -serve(ctx Context)
 }
-class checkConnErrorWriter {
--c: *conn
-+Write(p []byte): int, error
-}
-class statusError {
--code: int
--text: string
-+Error(): string
-}
 class serverHandler {
 -srv: *Server
-+ServeHTTP(rw ResponseWriter, req *Request)
-}
-class initALPNRequest {
--ctx: Context
--c: *Conn
--h: serverHandler
-+BaseContext(): Context
 +ServeHTTP(rw ResponseWriter, req *Request)
 }
 }
 chunkWriter --> response
 response --> chunkWriter
+checkConnErrorWriter --> conn
 expectContinueReader --> response
 conn --> Server
 serverHandler --> Server
-response --> conn
 connReader --> conn
 conn --> connReader
-checkConnErrorWriter --> conn
 initALPNRequest --> serverHandler
-timeoutWriter --|> ResponseWriter
-globalOptionsHandler --|> Handler
+response --> conn
+redirectHandler --|> Handler
 timeoutHandler --|> Handler
 ServeMux --|> Handler
-redirectHandler --|> Handler
+timeoutWriter --|> ResponseWriter
+globalOptionsHandler --|> Handler
+initALPNRequest --|> Handler
+response --|> Hijacker
+response --|> ResponseWriter
 response --|> CloseNotifier
 response --|> Flusher
-response --|> ResponseWriter
-response --|> Hijacker
 serverHandler --|> Handler
-initALPNRequest --|> Handler
 @enduml

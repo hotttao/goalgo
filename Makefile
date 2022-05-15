@@ -25,8 +25,8 @@ generate:
 
 .PHONY: uml
 uml:
-	goplantuml -recursive $(GOROOT)/src/net/http > web/net_http.puml
-	go-plantuml generate -d $(GOROOT)/src/ -f $(GOROOT)/src/net/http/server.go -o web/net_http_v2.puml
+	goplantuml -hide-private-members -recursive $(GOROOT)/src/net/http > web/net_http.puml
+	# go-plantuml generate -d $(GOROOT)/src/ -f $(GOROOT)/src/net/http/server.go -o web/net_http_v2.puml
 	# go-callvis $(GOROOT)/src/net/http/
 
 .PHONY: all
