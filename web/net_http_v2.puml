@@ -1,0 +1,398 @@
+@startuml
+package /usr/local/go/src/net/http/server.go{
+annotation /usr/local/go/src/net/http/server.go {
+-const StateActive: 
+-const StateIdle: 
+-const skipHooks: 
+-const runHooks: 
+-const StateClosed: 
+-const TrailerPrefix: STRING
+-const maxPostHandlerReadBytes: 
+-const StateHijacked: 
+-const bufferBeforeChunkingSize: INT
+-const DefaultMaxHeaderBytes: 
+-const rstAvoidanceDelay: 
+-const TimeFormat: STRING
+-const StateNew: ConnState
+-const shutdownPollIntervalMax: 
+-const debugServerConnections: 
+-var ErrHandlerTimeout: 
+-var bufioWriter4kPool: Pool
+-var ErrHijacked: 
+-var crlf: 
+-var errTooLarge: 
+-var ErrBodyNotAllowed: 
+-var ErrWriteAfterFlush: 
+-var testHookServerServe: func( *Server,  Listener) 
+-var extraHeaderKeys: 
+-var ErrAbortHandler: 
+-var uniqNameMu: Mutex
+-var bufioWriter2kPool: Pool
+-var headerDate: 
+-var silenceSemWarnContextKey: 
+-var uniqNameNext: 
+-var ErrServerClosed: 
+-var stateName: 
+-var ErrContentLength: 
+-var headerContentLength: 
+-var defaultServeMux: ServeMux
+-var ServerContextKey: 
+-var copyBufPool: 
+-var DefaultServeMux: 
+-var bufioReaderPool: Pool
+-var htmlReplacer: 
+-var colonSpace: 
+-var LocalAddrContextKey: 
+-bufioWriterPool(size int): *Pool
+-newBufioReader(r Reader): *Reader
+-putBufioReader(br *Reader)
+-newBufioWriterSize(w Writer, size int): *Writer
+-putBufioWriter(bw *Writer)
+-appendTime(b []byte, t Time): []byte
+-http1ServerSupportsRequest(req *Request): bool
+-checkWriteHeaderCode(code int)
+-relevantCaller(): Frame
+-foreachHeaderElement(v string, fn func( string) )
+-writeStatusLine(bw *Writer, is11 bool, code int, scratch []byte)
+-validNextProto(proto string): bool
+-badRequestError(e string): error
+-isCommonNetReadError(err error): bool
+-registerOnHitEOF(rc ReadCloser, fn func() )
+-requestBodyRemains(rc ReadCloser): bool
++Error(w ResponseWriter, error string, code int)
++NotFound(w ResponseWriter, r *Request)
++NotFoundHandler(): Handler
++StripPrefix(prefix string, h Handler): Handler
++Redirect(w ResponseWriter, r *Request, url string, code int)
+-htmlEscape(s string): string
++RedirectHandler(url string, code int): Handler
++NewServeMux(): *ServeMux
+-cleanPath(p string): string
+-stripHostPort(h string): string
+-appendSorted(es []muxEntry, e muxEntry): []muxEntry
++Handle(pattern string, handler Handler)
++HandleFunc(pattern string, handler func( ResponseWriter,  *Request) )
++Serve(l Listener, handler Handler): error
++ServeTLS(l Listener, handler Handler, certFile string, keyFile string): error
++AllowQuerySemicolons(h Handler): Handler
+-logf(r *Request, format string, args ... any)
++ListenAndServe(addr string, handler Handler): error
++ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler): error
++TimeoutHandler(h Handler, dt Duration, msg string): Handler
+-newLoggingConn(baseName string, c Conn): Conn
+-numLeadingCRorLF(v []byte): int
+-strSliceContains(ss []string, s string): bool
+-tlsRecordHeaderLooksLikeHTTP(hdr []byte): bool
++MaxBytesHandler(h Handler, n int64): Handler
+}
+interface Handler{
++ServeHTTP( ResponseWriter,  *Request)
+}
+interface closeWriter{
++CloseWrite(): error
+}
+interface CloseNotifier{
++CloseNotify(): chan bool
+}
+interface Flusher{
++Flush()
+}
+interface ResponseWriter{
++Header(): Header
++Write( []byte): int, error
++WriteHeader(statusCode int)
+}
+interface Hijacker{
++Hijack(): Conn, *ReadWriter, error
+}
+class timeoutWriter {
+-w: ResponseWriter
+-h: Header
+-wbuf: Buffer
+-req: *Request
+-mu: Mutex
+-err: error
+-wroteHeader: bool
+-code: int
++Push(target string, opts *PushOptions): error
++Header(): Header
++Write(p []byte): int, error
+-writeHeaderLocked(code int)
++WriteHeader(code int)
+}
+class globalOptionsHandler {
+
++ServeHTTP(w ResponseWriter, r *Request)
+}
+class chunkWriter {
+-res: *response
+-header: Header
+-wroteHeader: bool
+-chunking: bool
++Write(p []byte): int, error
+-flush()
+-close()
+-writeHeader(p []byte)
+}
+class expectContinueReader {
+-resp: *response
+-readCloser: ReadCloser
+-closed: atomicBool
+-sawEOF: atomicBool
++Read(p []byte): int, error
++Close(): error
+}
+class timeoutHandler {
+-handler: Handler
+-body: string
+-dt: Duration
+-testContext: Context
+-errorBody(): string
++ServeHTTP(w ResponseWriter, r *Request)
+}
+class writerOnly {
++: Writer
+
+}
+class ServeMux {
+-mu: RWMutex
+-m: map[string]muxEntry
+-es: []muxEntry
+-hosts: bool
+-match(path string): Handler, string
+-redirectToPathSlash(host string, path string, u *URL): *URL, bool
+-shouldRedirectRLocked(host string, path string): bool
++Handler(r *Request): Handler, string
+-handler(host string, path string): Handler, string
++ServeHTTP(w ResponseWriter, r *Request)
++Handle(pattern string, handler Handler)
++HandleFunc(pattern string, handler func( ResponseWriter,  *Request) )
+}
+class Server {
++Addr: string
++Handler: Handler
++TLSConfig: *Config
++ReadTimeout: Duration
++ReadHeaderTimeout: Duration
++WriteTimeout: Duration
++IdleTimeout: Duration
++MaxHeaderBytes: int
++TLSNextProto: map[string]func( *Server,  *Conn,  Handler) 
++ConnState: func( Conn,  ConnState) 
++ErrorLog: *Logger
++BaseContext: func( Listener) Context
++ConnContext: func(ctx Context, c Conn) Context
+-inShutdown: atomicBool
+-disableKeepAlives: int32
+-nextProtoOnce: Once
+-nextProtoErr: error
+-mu: Mutex
+-listeners: map[*Listener]interface{}
+-activeConn: map[*conn]interface{}
+-doneChan: chan interface{}
+-onShutdown: []func() 
+-newConn(rwc Conn): *conn
+-maxHeaderBytes(): int
+-initialReadLimitSize(): int64
+-tlsHandshakeTimeout(): Duration
+-getDoneChan(): chan interface{}
+-getDoneChanLocked(): chan interface{}
+-closeDoneChanLocked()
++Close(): error
++Shutdown(ctx Context): error
++RegisterOnShutdown(f func() )
+-numListeners(): int
+-closeIdleConns(): bool
+-closeListenersLocked(): error
++ListenAndServe(): error
+-shouldConfigureHTTP2ForServe(): bool
++Serve(l Listener): error
++ServeTLS(l Listener, certFile string, keyFile string): error
+-trackListener(ln *Listener, add bool): bool
+-trackConn(c *conn, add bool)
+-idleTimeout(): Duration
+-readHeaderTimeout(): Duration
+-doKeepAlives(): bool
+-shuttingDown(): bool
++SetKeepAlivesEnabled(v bool)
+-logf(format string, args ... any)
++ListenAndServeTLS(certFile string, keyFile string): error
+-setupHTTP2_ServeTLS(): error
+-setupHTTP2_Serve(): error
+-onceSetNextProtoDefaults_Serve()
+-onceSetNextProtoDefaults()
+}
+class extraHeader {
+-contentType: string
+-connection: string
+-transferEncoding: string
+-date: []byte
+-contentLength: []byte
++Write(w *Writer)
+}
+class muxEntry {
+-h: Handler
+-pattern: string
+
+}
+class redirectHandler {
+-url: string
+-code: int
++ServeHTTP(w ResponseWriter, r *Request)
+}
+class loggingConn {
+-name: string
++: Conn
++Write(p []byte): int, error
++Read(p []byte): int, error
++Close(): error
+}
+class response {
+-conn: *conn
+-req: *Request
+-reqBody: ReadCloser
+-cancelCtx: CancelFunc
+-wroteHeader: bool
+-wroteContinue: bool
+-wants10KeepAlive: bool
+-wantsClose: bool
+-canWriteContinue: atomicBool
+-writeContinueMu: Mutex
+-w: *Writer
+-cw: chunkWriter
+-handlerHeader: Header
+-calledHeader: bool
+-written: int64
+-contentLength: int64
+-status: int
+-closeAfterReply: bool
+-requestBodyLimitHit: bool
+-trailers: []string
+-handlerDone: atomicBool
+-dateBuf: []byte
+-clenBuf: []byte
+-statusBuf: []byte
+-closeNotifyCh: chan bool
+-didCloseNotify: int32
+-finalTrailers(): Header
+-declareTrailer(k string)
+-requestTooLarge()
+-needsSniff(): bool
++ReadFrom(src Reader): int64, error
++Header(): Header
++WriteHeader(code int)
+-bodyAllowed(): bool
++Write(data []byte): int, error
++WriteString(data string): int, error
+-write(lenData int, dataB []byte, dataS string): int, error
+-finishRequest()
+-shouldReuseConnection(): bool
+-closedRequestBodyEarly(): bool
++Flush()
+-sendExpectationFailed()
++Hijack(): Conn, *ReadWriter, error
++CloseNotify(): chan bool
+}
+class onceCloseListener {
++: Listener
+-once: Once
+-closeErr: error
++Close(): error
+-close()
+}
+class connReader {
+-conn: *conn
+-mu: Mutex
+-hasByte: bool
+-byteBuf: []byte
+-cond: *Cond
+-inRead: bool
+-aborted: bool
+-remain: int64
+-lock()
+-unlock()
+-startBackgroundRead()
+-backgroundRead()
+-abortPendingRead()
+-setReadLimit(remain int64)
+-setInfiniteReadLimit()
+-hitReadLimit(): bool
+-handleReadError(_ error)
+-closeNotify()
++Read(p []byte): int, error
+}
+class readResult {
++_: incomparable
+-n: int
+-err: error
+-b: byte
+
+}
+class conn {
+-server: *Server
+-cancelCtx: CancelFunc
+-rwc: Conn
+-remoteAddr: string
+-tlsState: *ConnectionState
+-werr: error
+-r: *connReader
+-bufr: *Reader
+-bufw: *Writer
+-lastMethod: string
+-curReq: Value
+-curState: interface{}
+-mu: Mutex
+-hijackedv: bool
+-hijacked(): bool
+-hijackLocked(): Conn, *ReadWriter, error
+-readRequest(ctx Context): *response, error
+-finalFlush()
+-close()
+-closeWriteAndWait()
+-setState(nc Conn, state ConnState, runHook bool)
+-getState(): ConnState, int64
+-serve(ctx Context)
+}
+class checkConnErrorWriter {
+-c: *conn
++Write(p []byte): int, error
+}
+class statusError {
+-code: int
+-text: string
++Error(): string
+}
+class serverHandler {
+-srv: *Server
++ServeHTTP(rw ResponseWriter, req *Request)
+}
+class initALPNRequest {
+-ctx: Context
+-c: *Conn
+-h: serverHandler
++BaseContext(): Context
++ServeHTTP(rw ResponseWriter, req *Request)
+}
+}
+chunkWriter --> response
+response --> chunkWriter
+expectContinueReader --> response
+conn --> Server
+serverHandler --> Server
+response --> conn
+connReader --> conn
+conn --> connReader
+checkConnErrorWriter --> conn
+initALPNRequest --> serverHandler
+timeoutWriter --|> ResponseWriter
+globalOptionsHandler --|> Handler
+timeoutHandler --|> Handler
+ServeMux --|> Handler
+redirectHandler --|> Handler
+response --|> CloseNotifier
+response --|> Flusher
+response --|> ResponseWriter
+response --|> Hijacker
+serverHandler --|> Handler
+initALPNRequest --|> Handler
+@enduml
