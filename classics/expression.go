@@ -1,6 +1,8 @@
 /*
 Package algo 表达式求值
 */
+package classics
+
 // InfixToPostfix 中序转前序表达式
 func InfixToPostfix() {
 
