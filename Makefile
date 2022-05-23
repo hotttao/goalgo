@@ -7,6 +7,7 @@ API_PROTO_FILES=$(shell find api -name *.proto)
 .PHONY: init
 # init env
 init:
+	# sudo yum install protobuf-compiler
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
@@ -14,7 +15,7 @@ init:
 	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	go install github.com/bykof/go-plantuml@latest
 	go install github.com/jfeliu007/goplantuml/cmd/goplantuml@latest
-	go install github.com/ofabry/go-callvis
+	# go install github.com/ofabry/go-callvis
 
 .PHONY: generate
 # generate
