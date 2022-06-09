@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	run_client bool
+)
+
 // grpcCmd represents the grpc command
 var grpcCmd = &cobra.Command{
 	Use:   "grpc",
@@ -22,8 +26,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("grpc called")
-		grpc.StartGrpcServer()
+		if !run_client {
+			fmt.Println("grpc server start")
+			grpc.StartGrpcServer()
+			return
+		}
+		fmt.Println("grpc client")
 	},
 }
 
@@ -38,5 +46,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// grpcCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	grpcCmd.Flags().BoolVarP(&run_client, "run_client", "c", false, "set true will run client")
 }

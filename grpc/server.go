@@ -29,7 +29,9 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 func StartGrpcServer() {
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+
 	if err != nil {
+		
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
