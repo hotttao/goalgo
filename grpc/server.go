@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 
@@ -26,12 +27,30 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
+func (s *server) Channle(stream pb.Greeter_ChannleServer) error {
+	for {
+		in, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+
+		reply := &pb.HelloReply{Message: "Hello " + in.GetName()}
+		err = stream.Send(reply)
+		if err != nil {
+			return err
+		}
+	}
+}
+
 func StartGrpcServer() {
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 
 	if err != nil {
-		
+
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()

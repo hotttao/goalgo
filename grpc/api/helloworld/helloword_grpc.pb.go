@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type GreeterClient interface {
 	// Sends a greeting
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	Channle(ctx context.Context, opts ...grpc.CallOption) (Greeter_ChannleClient, error)
 }
 
 type greeterClient struct {
@@ -43,12 +44,44 @@ func (c *greeterClient) SayHello(ctx context.Context, in *HelloRequest, opts ...
 	return out, nil
 }
 
+func (c *greeterClient) Channle(ctx context.Context, opts ...grpc.CallOption) (Greeter_ChannleClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Greeter_ServiceDesc.Streams[0], "/helloworld.Greeter/Channle", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &greeterChannleClient{stream}
+	return x, nil
+}
+
+type Greeter_ChannleClient interface {
+	Send(*HelloRequest) error
+	Recv() (*HelloReply, error)
+	grpc.ClientStream
+}
+
+type greeterChannleClient struct {
+	grpc.ClientStream
+}
+
+func (x *greeterChannleClient) Send(m *HelloRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *greeterChannleClient) Recv() (*HelloReply, error) {
+	m := new(HelloReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // GreeterServer is the server API for Greeter service.
 // All implementations must embed UnimplementedGreeterServer
 // for forward compatibility
 type GreeterServer interface {
 	// Sends a greeting
 	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	Channle(Greeter_ChannleServer) error
 	mustEmbedUnimplementedGreeterServer()
 }
 
@@ -58,6 +91,9 @@ type UnimplementedGreeterServer struct {
 
 func (UnimplementedGreeterServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
+func (UnimplementedGreeterServer) Channle(Greeter_ChannleServer) error {
+	return status.Errorf(codes.Unimplemented, "method Channle not implemented")
 }
 func (UnimplementedGreeterServer) mustEmbedUnimplementedGreeterServer() {}
 
@@ -90,6 +126,32 @@ func _Greeter_SayHello_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Greeter_Channle_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GreeterServer).Channle(&greeterChannleServer{stream})
+}
+
+type Greeter_ChannleServer interface {
+	Send(*HelloReply) error
+	Recv() (*HelloRequest, error)
+	grpc.ServerStream
+}
+
+type greeterChannleServer struct {
+	grpc.ServerStream
+}
+
+func (x *greeterChannleServer) Send(m *HelloReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *greeterChannleServer) Recv() (*HelloRequest, error) {
+	m := new(HelloRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Greeter_ServiceDesc is the grpc.ServiceDesc for Greeter service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +164,13 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Greeter_SayHello_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Channle",
+			Handler:       _Greeter_Channle_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "helloworld/helloword.proto",
 }

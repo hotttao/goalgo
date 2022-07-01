@@ -23,7 +23,9 @@ service Greeter {
           body: "*",
       }
     };
-  }
+  };
+
+  rpc Channle (stream HelloRequest) returns (stream HelloReply);
 }
 
 // The request message containing the user's name.

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/spf13/cobra"
 )
@@ -34,9 +35,15 @@ var trialCmd = &cobra.Command{
 		// fmt.Println(timer.Stop())
 		// fmt.Println("timer stop")
 		// time.Sleep(5 * time.Second)
-		v := Output{}
-		fmt.Println(v)
-		v.Name()
+		// v := Output{}
+		// fmt.Println(v)
+		// v.Name()
+		raw_url := "discovery://default/provider"
+		u, err := url.Parse(raw_url)
+		if err == nil {
+			fmt.Printf("url: %+v\n", *u)
+		}
+
 	},
 }
 

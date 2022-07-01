@@ -32,6 +32,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 		fmt.Println("grpc client")
+		grpc.StartClient()
 	},
 }
 

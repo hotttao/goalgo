@@ -10,6 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7 // indirect
 	github.com/go-kratos/kratos/v2 v2.3.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1 // indirect
