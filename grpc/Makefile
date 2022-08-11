@@ -20,8 +20,8 @@ python:
 	python -m grpc_tools.protoc \
 		   --proto_path=./protobuf \
 	       --proto_path=../third_party \
- 	       --python_out=./python/api \
- 	       --grpc_python_out=./python/api \
+ 	       --python_out=./python/ \
+ 	       --grpc_python_out=./python/ \
  	       --openapi_out==paths=source_relative:. \
 	       $(API_PROTO_FILES)
 
