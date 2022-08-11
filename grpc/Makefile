@@ -1,24 +1,35 @@
 GOPATH:=$(shell go env GOPATH)
 GOROOT:=$(shell go env GOROOT)
-API_PROTO_FILES=$(shell find api -name *.proto)
+API_PROTO_FILES=$(shell find protobuf -name *.proto)
 
 
-.PHONY: api
+.PHONY: golang
 # generate api proto
-api:
-	protoc --proto_path=./api \
+golang:
+	protoc --proto_path=./protobuf \
 	       --proto_path=../third_party \
- 	       --go_out=paths=source_relative:./api \
- 	       --go-http_out=paths=source_relative:./api \
- 	       --go-grpc_out=paths=source_relative:./api \
- 	       --openapi_out==paths=source_relative:. \
+ 	       --go_out=paths=source_relative:./golang/api \
+ 	       --go-http_out=paths=source_relative:./golang/api \
+ 	       --go-grpc_out=paths=source_relative:./golang/api \
+ 	       --openapi_out==paths=source_relative:./golang \
 	       $(API_PROTO_FILES)
 
+.PHONY: python
+# generate api proto
+python:
+	python -m grpc_tools.protoc \
+		   --proto_path=./protobuf \
+	       --proto_path=../third_party \
+ 	       --python_out=./python/api \
+ 	       --grpc_python_out=./python/api \
+ 	       --openapi_out==paths=source_relative:. \
+	       $(API_PROTO_FILES)
 
 .PHONY: all
 # generate all
 all:
-	make api;
+	make golang;
+	make python;
 
 # show help
 help:

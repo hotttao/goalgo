@@ -7,7 +7,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hotttao/goalgo/grpc"
+	grpc "github.com/hotttao/goalgo/grpc/golang"
 	"github.com/spf13/cobra"
 )
 

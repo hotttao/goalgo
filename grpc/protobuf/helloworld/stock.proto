@@ -10,31 +10,31 @@ option java_outer_classname = "HelloWorldProto";
 package helloworld;
 
 // The greeting service definition.
-service Greeter {
+service Stock {
   // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {
+  rpc SayHello (StockRequest) returns (StockReply) {
     option (google.api.http) = {
       // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
-      get: "/helloworld/{name}",
+      get: "/stock/{name}",
       // 可以添加附加接口
       additional_bindings {
           // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
-          post: "/v1/greeter/say_hello",
+          post: "/stock/stock_info",
           body: "*",
       }
     };
   };
 
-  rpc Channle (stream HelloRequest) returns (stream HelloReply);
+  rpc Channle (stream StockRequest) returns (stream StockReply);
 }
 
 // The request message containing the user's name.
-message HelloRequest {
+message StockRequest {
   string name = 1;
   
 }
 
 // The response message containing the greetings
-message HelloReply {
+message StockReply {
   string message = 1;
 }

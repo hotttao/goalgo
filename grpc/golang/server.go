@@ -7,8 +7,9 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 
-	pb "github.com/hotttao/goalgo/grpc/api/helloworld"
+	pb "github.com/hotttao/goalgo/grpc/golang/api/helloworld"
 	"google.golang.org/grpc"
 )
 
@@ -27,8 +28,33 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
-func (s *server) Channle(stream pb.Greeter_ChannleServer) error {
+func (s *server) SayHelloReplyStream(in *pb.HelloRequest, stream pb.Greeter_SayHelloReplyStreamServer) error {
+	for i := 1; i < 10; i++ {
+		stream.Send(&pb.HelloReply{Message: "Hello " + string(in.GetName()) + strconv.Itoa(i)})
+	}
+	return nil
+}
+
+func (s *server) SayHelloRequestStream(stream pb.Greeter_SayHelloRequestStreamServer) error {
+	i := 1
 	for {
+		in, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.HelloReply{Message: "RequestStream End " + strconv.Itoa(i)})
+		}
+
+		if err != nil {
+			return err
+		}
+		log.Printf("Receive: %v", in)
+		i++
+	}
+
+}
+func (s *server) SayHelloStream(stream pb.Greeter_SayHelloStreamServer) error {
+	i := 0
+	for {
+		i++
 		in, err := stream.Recv()
 		if err != nil {
 			if err == io.EOF {
@@ -37,7 +63,7 @@ func (s *server) Channle(stream pb.Greeter_ChannleServer) error {
 			return err
 		}
 
-		reply := &pb.HelloReply{Message: "Hello " + in.GetName()}
+		reply := &pb.HelloReply{Message: "Hello " + in.GetName() + strconv.Itoa(i)}
 		err = stream.Send(reply)
 		if err != nil {
 			return err

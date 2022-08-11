@@ -17,74 +17,74 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-type GreeterHTTPServer interface {
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+type StockHTTPServer interface {
+	SayHello(context.Context, *StockRequest) (*StockReply, error)
 }
 
-func RegisterGreeterHTTPServer(s *http.Server, srv GreeterHTTPServer) {
+func RegisterStockHTTPServer(s *http.Server, srv StockHTTPServer) {
 	r := s.Route("/")
-	r.POST("/v1/greeter/say_hello", _Greeter_SayHello0_HTTP_Handler(srv))
-	r.GET("/helloworld/{name}", _Greeter_SayHello1_HTTP_Handler(srv))
+	r.POST("/stock/stock_info", _Stock_SayHello0_HTTP_Handler(srv))
+	r.GET("/stock/{name}", _Stock_SayHello1_HTTP_Handler(srv))
 }
 
-func _Greeter_SayHello0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Stock_SayHello0_HTTP_Handler(srv StockHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in HelloRequest
+		var in StockRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/helloworld.Greeter/SayHello")
+		http.SetOperation(ctx, "/helloworld.Stock/SayHello")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.SayHello(ctx, req.(*HelloRequest))
+			return srv.SayHello(ctx, req.(*StockRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*HelloReply)
+		reply := out.(*StockReply)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Greeter_SayHello1_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Stock_SayHello1_HTTP_Handler(srv StockHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in HelloRequest
+		var in StockRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/helloworld.Greeter/SayHello")
+		http.SetOperation(ctx, "/helloworld.Stock/SayHello")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.SayHello(ctx, req.(*HelloRequest))
+			return srv.SayHello(ctx, req.(*StockRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*HelloReply)
+		reply := out.(*StockReply)
 		return ctx.Result(200, reply)
 	}
 }
 
-type GreeterHTTPClient interface {
-	SayHello(ctx context.Context, req *HelloRequest, opts ...http.CallOption) (rsp *HelloReply, err error)
+type StockHTTPClient interface {
+	SayHello(ctx context.Context, req *StockRequest, opts ...http.CallOption) (rsp *StockReply, err error)
 }
 
-type GreeterHTTPClientImpl struct {
+type StockHTTPClientImpl struct {
 	cc *http.Client
 }
 
-func NewGreeterHTTPClient(client *http.Client) GreeterHTTPClient {
-	return &GreeterHTTPClientImpl{client}
+func NewStockHTTPClient(client *http.Client) StockHTTPClient {
+	return &StockHTTPClientImpl{client}
 }
 
-func (c *GreeterHTTPClientImpl) SayHello(ctx context.Context, in *HelloRequest, opts ...http.CallOption) (*HelloReply, error) {
-	var out HelloReply
-	pattern := "/helloworld/{name}"
+func (c *StockHTTPClientImpl) SayHello(ctx context.Context, in *StockRequest, opts ...http.CallOption) (*StockReply, error) {
+	var out StockReply
+	pattern := "/stock/{name}"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation("/helloworld.Greeter/SayHello"))
+	opts = append(opts, http.Operation("/helloworld.Stock/SayHello"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
