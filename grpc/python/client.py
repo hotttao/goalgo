@@ -4,7 +4,7 @@ from helloworld.helloword_pb2 import HelloRequest
 
 def say_hello(stub: GreeterStub):
     request = HelloRequest(name='tao', num_greetings="2")
-    response = stub.SayHello(request)
+    response = stub.SayHello(request, wait_for_ready=True)
     print(f"{response.message}")
     
 def say_hello_request_stream(stub: GreeterStub):
@@ -36,6 +36,7 @@ def run():
     # of the code.
     with grpc.insecure_channel('localhost:50052') as channel:
         stub = GreeterStub(channel)
+        # stub.initial_rpc_call()
         print("-------------- say_hello --------------")
         say_hello(stub)
         print("-------------- say_hello_request_stream --------------")
