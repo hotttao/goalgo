@@ -2,19 +2,35 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/spf13/cobra"
 )
 
 // Combine 结构组合接口
-type Combine interface {
-	Name()
+type C struct {
+	Name string
+}
+
+func (c C) GetName() string {
+	return c.Name
+}
+
+type A struct {
+	Owner string
+}
+
+func (a A) GetName() string {
+	return a.Owner
 }
 
 // Output 结构嵌套接口
 type Output struct {
-	Combine
+	C
+	A
+}
+
+func (o Output) GetName() string {
+	return o.C.Name
 }
 
 // trialCmd represents the trial command
@@ -24,26 +40,11 @@ var trialCmd = &cobra.Command{
 	Long:  `trail some package`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("trial called")
-		// timer := time.NewTimer(3 * time.Second)
-		// go func() {
-		// 	select {
-		// 	case <-timer.C:
-		// 		fmt.Println("timer is running")
-		// 	}
-		// }()
-		// time.Sleep(1 * time.Second)
-		// fmt.Println(timer.Stop())
-		// fmt.Println("timer stop")
-		// time.Sleep(5 * time.Second)
-		// v := Output{}
-		// fmt.Println(v)
-		// v.Name()
-		raw_url := "discovery://default/provider"
-		u, err := url.Parse(raw_url)
-		if err == nil {
-			fmt.Printf("url: %+v\n", *u)
+		o := Output{
+			A: A{Owner: "aa"},
+			C: C{Name: "cc"},
 		}
-
+		fmt.Printf("%v\n", o.GetName())
 	},
 }
 
