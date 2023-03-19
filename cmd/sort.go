@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hotttao/goalgo/algo"
+	"github.com/hotttao/goalgo/pkg/algo"
 	"github.com/spf13/cobra"
 )
 
