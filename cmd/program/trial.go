@@ -1,4 +1,4 @@
-package cmd
+package cmd_program
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ func (o Output) GetName() string {
 }
 
 // trialCmd represents the trial command
-var trialCmd = &cobra.Command{
+var TrialCmd = &cobra.Command{
 	Use:   "trial",
 	Short: "trail some package",
 	Long:  `trail some package`,
@@ -46,18 +46,4 @@ var trialCmd = &cobra.Command{
 		}
 		fmt.Printf("%v\n", o.GetName())
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(trialCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// trialCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// trialCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

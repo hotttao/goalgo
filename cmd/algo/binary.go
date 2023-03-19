@@ -1,4 +1,4 @@
-package cmd
+package cmd_algo
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // binaryCmd represents the binary command
-var binaryCmd = &cobra.Command{
+var BinaryCmd = &cobra.Command{
 	Use:   "binary",
 	Short: "binary search",
 	Long:  `binary`,
@@ -35,18 +35,4 @@ var binaryCmd = &cobra.Command{
 		v = algo.BinaryLteEnd(data, 15)
 		fmt.Printf("search lte %d at index: %d\n", 15, v)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(binaryCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// binaryCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// binaryCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

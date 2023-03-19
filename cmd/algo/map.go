@@ -1,4 +1,4 @@
-package cmd
+package cmd_algo
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // mapCmd represents the map command
-var mapCmd = &cobra.Command{
+var MapCmd = &cobra.Command{
 	Use:   "map",
 	Short: "map structure",
 	Long:  `map structure`,
@@ -45,18 +45,4 @@ var mapCmd = &cobra.Command{
 		fmt.Println(v, ok)
 		fmt.Println(m)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(mapCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// mapCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// mapCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

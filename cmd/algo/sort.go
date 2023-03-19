@@ -1,4 +1,4 @@
-package cmd
+package cmd_algo
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // sortCmd represents the sort command
-var sortCmd = &cobra.Command{
+var SortCmd = &cobra.Command{
 	Use:   "sort",
 	Short: "run sort algo",
 	Long:  `run sort algo`,
@@ -45,18 +45,4 @@ var sortCmd = &cobra.Command{
 		fmt.Println(data)
 
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(sortCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// sortCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// sortCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
